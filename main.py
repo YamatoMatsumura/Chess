@@ -8,6 +8,7 @@ import move_updates as update
 import move_validation as validate
 import check_for_check as check
 import images
+import engine_file_path as path
 import test
 
 # initialize pygame window
@@ -145,7 +146,8 @@ textRect = textSurface.get_rect()
 textRect.topleft = (150, 10)
 
 # initialize engine for single player
-engine = chess.engine.SimpleEngine.popen_uci("C:\\Users\\yamth\\OneDrive\\Desktop\\CS50_Final_Project\\stockfish\\stockfish-windows-x86-64-modern.exe")
+enginePath = path.engineFilePath()
+engine = chess.engine.SimpleEngine.popen_uci(enginePath)
 
 while True:
     if not gameOver and not started:

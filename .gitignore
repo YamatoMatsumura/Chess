@@ -2,6 +2,7 @@
 __pycache__/
 .vscode/
 chess_venv/
+stockfish/
 
 # files
 tempCodeRunnerFile.py
