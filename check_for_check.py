@@ -23,7 +23,7 @@ def is_check_after_move(click1Piece, click2Pos, boardState):
         return False
 
 
-def did_move_resolve_check(click1Pos, click2Pos, boardState, mapture, s, checkMateCheck=False, displayMoveCall=False):
+def did_move_resolve_check(click1Pos, click2Pos, boardState, mapture, s, displayMoveCall=False):
     click1Piece = boardState[click1Pos[0]][click1Pos[1]]['piece']
     # create deep copy of boardState
     tempBoardState = deep_copy_structure(boardState)
@@ -41,7 +41,7 @@ def did_move_resolve_check(click1Pos, click2Pos, boardState, mapture, s, checkMa
             flag = False
 
     # make sure red king highlight doesn't go away if only theoretically checking if the move resolved check like from display or checking for checkmate
-    if checkMateCheck or displayMoveCall:
+    if displayMoveCall:
         return flag
     if flag:
         for i in range(8):

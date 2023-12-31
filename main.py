@@ -270,7 +270,7 @@ while True:
                     if click1Pos or click2Pos:
                         # display moves if clicked
                         boardState = update.display_moves(
-                            click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo
+                            click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo, turnCount
                         )
                     if click1Pos and click2Pos:
                         # figure out if move or capture
@@ -409,7 +409,7 @@ while True:
                     if click1Pos or click2Pos:
                         # display moves if clicked
                         boardState = update.display_moves(
-                            click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo
+                            click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo, turnCount
                         )
                     if click1Pos and click2Pos:
                         # figure out if move or capture

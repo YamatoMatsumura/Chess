@@ -2,12 +2,13 @@ import move_validation as validate
 import check_for_check as check
 
 
-def display_moves(click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo):
+def display_moves(click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo, turnCount):
     """
     Returns boardState with new 'moves' key to later blit onto board.
     Tries every single possible move and if it is a legal move, add a 'moves' key to the square.
     """
 
+    click1Piece = boardState[click1Pos[0]][click1Pos[1]]['piece']
     # remove moves once click 2 is made
     if click2Pos:
         for x in range(8):
@@ -16,20 +17,33 @@ def display_moves(click1Pos, click2Pos, boardState, greenCircle, redCircle, inCh
                     del boardState[x][y]["moves"]
 
     if click1Pos and click2Pos is None:
+        mapture = ['capture', 'move', 'castle']
+        display = [redCircle, greenCircle, greenCircle]
+        if turnCount == 0:
+            turn = 'w'
+        elif turnCount == 1:
+            turn = 'b'
+        if click1Piece[0] != turn:
+            return boardState
         for i in range(8):
             for j in range(8):
-                if validate.legal_move(click1Pos, [i, j], 'capture', boardState, enPessantInfo):
-                    if not inCheck:
-                        boardState[i][j]['moves'] = redCircle
-                    elif inCheck and check.did_move_resolve_check(click1Pos, [i, j], boardState, 'capture', s, True):
-                        boardState[i][j]['moves'] = redCircle
-                elif validate.legal_move(click1Pos, [i, j], 'move', boardState, enPessantInfo):
-                    if not inCheck:
-                        boardState[i][j]['moves'] = greenCircle
-                    elif inCheck and check.did_move_resolve_check(click1Pos, [i, j], boardState, 'move', s, True):
-                        boardState[i][j]['moves'] = greenCircle
-                elif validate.legal_move(click1Pos, [i, j], 'castle', boardState, enPessantInfo):
-                    boardState[i][j]['moves'] = greenCircle
+                for index, option in enumerate(mapture):
+                    if validate.legal_move(click1Pos, [i, j], option, boardState, enPessantInfo):
+                        # if king is moving, make sure it doesn't put it's self into check
+                        if 'k' in click1Piece:
+                            if not check.did_move_resolve_check(click1Pos, [i, j], boardState, option, s, True):
+                                continue
+                        if option == 'move' or option == 'capture':
+                            # if inCheck, make sure move made takes you out of check
+                            if inCheck:
+                                if check.did_move_resolve_check(click1Pos, [i, j], boardState, option, s, True):
+                                    boardState[i][j]['moves'] = display[index]
+                            # if not inCheck, legal move so display
+                            else:
+                                boardState[i][j]['moves'] = display[index]
+                        # if castleing, legal move so display
+                        else:
+                            boardState[i][j]['moves'] = display[index]
     return boardState
 
 
