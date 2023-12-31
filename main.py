@@ -9,7 +9,6 @@ import move_validation as validate
 import check_for_check as check
 import images
 import engine_file_path as path
-import test
 
 # initialize pygame window
 pygame.init()
@@ -146,7 +145,7 @@ textRect = textSurface.get_rect()
 textRect.topleft = (150, 10)
 
 # initialize engine for single player
-enginePath = path.engineFilePath()
+enginePath = path.get_file_path()
 engine = chess.engine.SimpleEngine.popen_uci(enginePath)
 
 while True:
@@ -195,67 +194,66 @@ while True:
         continue
     # if either icon was clicked
     if started:
-        # placed here so it works for both one and two player modes
-        if promotionMenu:
-            promotionMenuClicked = False
-            clickedPiece = None
-            for event in pygame.event.get():
-                # check for closing window in promotion menu
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    promotionMenuClicked = True
-            if pawnPos[0] == 0:
-                # if white pawn promoting, draw it and specify dictionary keys to white pieces
-                clickedPiece = {
-                    'piece': images.promotion_menu(screen, [wq, wn, wr, wb], 'w', pawnPos[1], promotionMenuClicked, colorClicked),
-                    'name': ['wq', 'wn', 'wr', 'wb'],
-                    'var': [wq, wn, wr, wb]
-                }
-            elif pawnPos[0] == 7:
-                # if black pawn promoting, draw it and specificy dictinoary keys to black pieces
-                clickedPiece = {
-                    'piece': images.promotion_menu(screen, [bq, bn, br, bb], 'b', pawnPos[1], promotionMenuClicked, colorClicked),
-                    'name': ['bq', 'bn', 'br', 'bb'],
-                    'var': [bq, bn, br, bb]
-                }
-            # if user clicks something
-            if clickedPiece['piece'] is not None:
-                promotionMenu = False
-                # if user clicks anything outside of promotion menu, undo the move
-                if clickedPiece['piece'] == 'nothing':
-                    boardState = originalBoardState
-                    if turnCount == 1:
-                        turnCount = 0
-                    elif turnCount == 0:
-                        turnCount = 1
-                    continue
-                elif clickedPiece['piece'] == 'queen':
-                    index = 0
-                elif clickedPiece['piece'] == 'knight':
-                    index = 1
-                elif clickedPiece['piece'] == 'rook':
-                    index = 2
-                elif clickedPiece['piece'] == 'bishop':
-                    index = 3
-                boardState[pawnPos[0]][pawnPos[1]]['piece'] = clickedPiece['name'][index]
-                boardState[pawnPos[0]][pawnPos[1]]['image'] = clickedPiece['var'][index]
-                # add redSquare if move made put king in check
-                if isinstance(
-                    check.is_check_after_move(
-                        clickedPiece['name'][index], pawnPos, boardState
-                    ),
-                    tuple
-                ):
-                    boardState = check.is_check_after_move(clickedPiece['name'][index], pawnPos, boardState)[1]
-                if check.checkmate(boardState, s):
-                    gameOver = True
-
-            pygame.display.update()
-            clock.tick(60)
-            continue
         if twoPlayerMode:
+            if promotionMenu:
+                promotionMenuClicked = False
+                clickedPiece = None
+                for event in pygame.event.get():
+                    # check for closing window in promotion menu
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        promotionMenuClicked = True
+                if pawnPos[0] == 0:
+                    # if white pawn promoting, draw it and specify dictionary keys to white pieces
+                    clickedPiece = {
+                        'piece': images.promotion_menu(screen, [wq, wn, wr, wb], 'w', pawnPos[1], promotionMenuClicked, colorClicked),
+                        'name': ['wq', 'wn', 'wr', 'wb'],
+                        'var': [wq, wn, wr, wb]
+                    }
+                elif pawnPos[0] == 7:
+                    # if black pawn promoting, draw it and specificy dictinoary keys to black pieces
+                    clickedPiece = {
+                        'piece': images.promotion_menu(screen, [bq, bn, br, bb], 'b', pawnPos[1], promotionMenuClicked, colorClicked),
+                        'name': ['bq', 'bn', 'br', 'bb'],
+                        'var': [bq, bn, br, bb]
+                    }
+                # if user clicks something
+                if clickedPiece['piece'] is not None:
+                    promotionMenu = False
+                    # if user clicks anything outside of promotion menu, undo the move
+                    if clickedPiece['piece'] == 'nothing':
+                        boardState = originalBoardState
+                        if turnCount == 1:
+                            turnCount = 0
+                        elif turnCount == 0:
+                            turnCount = 1
+                        continue
+                    elif clickedPiece['piece'] == 'queen':
+                        index = 0
+                    elif clickedPiece['piece'] == 'knight':
+                        index = 1
+                    elif clickedPiece['piece'] == 'rook':
+                        index = 2
+                    elif clickedPiece['piece'] == 'bishop':
+                        index = 3
+                    boardState[pawnPos[0]][pawnPos[1]]['piece'] = clickedPiece['name'][index]
+                    boardState[pawnPos[0]][pawnPos[1]]['image'] = clickedPiece['var'][index]
+                    # add redSquare if move made put king in check
+                    if isinstance(
+                        check.is_check_after_move(
+                            clickedPiece['name'][index], pawnPos, boardState
+                        ),
+                        tuple
+                    ):
+                        boardState = check.is_check_after_move(clickedPiece['name'][index], pawnPos, boardState)[1]
+                    if check.checkmate(boardState, s):
+                        gameOver = True
+
+                pygame.display.update()
+                clock.tick(60)
+                continue
             # main game event loop
             for event in pygame.event.get():
                 # check for closing window in game
@@ -406,7 +404,7 @@ while True:
                     # get info about click pos
                     boardState, click1Pos, click1Piece, click2Pos, click2Piece, clickCount = \
                         validate.get_click_piece_pos(
-                            boardState, clickCount, click1Pos, click1Piece, click2Pos, click2Piece, colorClicked, engineSkip    
+                            boardState, clickCount, click1Pos, click1Piece, click2Pos, click2Piece, colorClicked, engineSkip
                         )
                     if click1Pos or click2Pos:
                         # display moves if clicked

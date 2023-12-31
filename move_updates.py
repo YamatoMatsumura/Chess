@@ -1,8 +1,6 @@
 import move_validation as validate
 import check_for_check as check
 
-import test
-
 
 def display_moves(click1Pos, click2Pos, boardState, greenCircle, redCircle, inCheck, s, enPessantInfo):
     """
