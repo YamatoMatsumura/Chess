@@ -1,0 +1,9 @@
+# directories
+__pycache__/
+.vscode/
+chess_venv/
+
+# files
+tempCodeRunnerFile.py
+test.py
+to-do.txt
