@@ -7,7 +7,6 @@ stockfish/
 tempCodeRunnerFile.py
 test.py
 to-do.txt
-main.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
