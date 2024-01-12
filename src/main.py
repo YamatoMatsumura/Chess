@@ -123,7 +123,7 @@ for x in range(8):
         tileCount += 1
 
 # initialize variables
-click1Piece, click2Piece, click1Pos, click2Pos, mapture, gameOver, pawnPos, originalBoardState, promotionPiece = (None,) * 9
+click1Piece, click2Piece, click1Pos, click2Pos, mapture, gameOver, pawnPos, originalBoardState, promotionPiece, keyPressed = (None,) * 10
 inCheck, started, onePlayerMode, twoPlayerMode, enPessantInfo, promotionMenu, bool, colorClicked, engineTurn, engineSkip = (False, ) * 10
 clickCount, loopCount = (0, ) * 2
 firstTimeColorClicked = True
@@ -192,12 +192,6 @@ while True:
         pygame.display.update()
         clock.tick(60)
         continue
-    # for event in pygame.event.get():
-    #     if event.type == pygame.KEYDOWN:
-    #         if event.key == pygame.K_RIGHT:
-    #             print('right pressed')
-    #         if event.key == pygame.K_LEFT:
-    #             print('left pressed')
     # if either icon was clicked
     if started:
         if promotionMenu:
@@ -259,13 +253,23 @@ while True:
             pygame.display.update()
             clock.tick(60)
             continue
+        if keyPressed is not None:
+            currentIndex = len(boardState)
+            if keyPressed == 'r':
+                pass
+
         if twoPlayerMode:
-            # main game event loop
+            # main two player game event loop
             for event in pygame.event.get():
                 # check for closing window in game
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        keyPressed = 'r'
+                    if event.key == pygame.K_LEFT:
+                        keyPressed = 'w'
                 # event.button == 1 is a left click
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     # get info about click pos
@@ -325,6 +329,7 @@ while True:
                             boardState = update.update_move(mapture, boardState, click1Pos, click2Pos, s)
                             # update turn count
                             turnCount = validate.turn_counter(click1Piece, click2Piece, turnCount, mapture)[1]
+                            boardHistory.append(boardState)
 
                             # see if move put king in check
                             if isinstance(check.is_check_after_move(click1Piece, click2Pos, boardState), tuple):
@@ -340,30 +345,9 @@ while True:
                             click1Pos, click2Pos = None, None
                     if check.checkmate(boardState, s):
                         gameOver = True
+            # blit board
+            images.blit_board_white(screen, board, boardRect, boardState)
 
-            # blit board rectangles
-            screen.blit(board, boardRect)
-            for col in boardState:
-                for row in col:
-                    try:
-                        screen.blit(row['check'], (rowSpace-3.01, colSpace-8))
-                    except KeyError:
-                        pass
-                    # blit pieces on board
-                    screen.blit(row["image"], (rowSpace, colSpace))
-                    try:
-                        # blit green/red circle on board
-                        screen.blit(row["moves"], (rowSpace+20, colSpace+16))
-                    except KeyError:
-                        pass
-                    rowSpace += 70
-                    rowCount += 1
-                    if rowCount == 8:
-                        colSpace += 70
-                        rowCount = 0
-                        rowSpace = 4
-                    if colSpace == 568:
-                        colSpace = 8
         if onePlayerMode:
             # display options to choose color
             text = 'Select Color'
@@ -400,6 +384,7 @@ while True:
                     engineTurn = True
                 firstTimeColorClicked = False
 
+            # main single player loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -493,45 +478,12 @@ while True:
                             click1Pos, click2Pos = None, None
                     if check.checkmate(boardState, s):
                         gameOver = True
-
-            # set appropriate values to make sure it blit's from top left or bottom right of board
-            if colorClicked:
+            # blit board depending on what color was clicked
+            if colorClicked is not False:
                 if colorClicked[1] == 'w':
-                    rowSpace = 4
-                    colSpace = 8
+                    images.blit_board_white(screen, board, boardRect, boardState)
                 elif colorClicked[1] == 'b':
-                    rowSpace = 495
-                    colSpace = 500
+                    images.blit_board_black(screen, board, boardRect, boardState)
 
-                # blit board rectangles
-                screen.blit(board, boardRect)
-                for col in boardState:
-                    for row in col:
-                        try:
-                            screen.blit(row['check'], (rowSpace-3.01, colSpace-8))
-                        except KeyError:
-                            pass
-                        # blit pieces on board
-                        screen.blit(row["image"], (rowSpace, colSpace))
-                        try:
-                            # blit green/red circle on board
-                            screen.blit(row["moves"], (rowSpace+20, colSpace+16))
-                        except KeyError:
-                            pass
-                        # adjust by color either blitting top to bottom or bottom to top
-                        if colorClicked[1] == 'w':
-                            rowSpace += 70
-                            rowCount += 1
-                            if rowCount == 8:
-                                colSpace += 70
-                                rowCount = 0
-                                rowSpace = 4
-                        elif colorClicked[1] == 'b':
-                            rowSpace -= 70
-                            rowCount += 1
-                            if rowCount == 8:
-                                colSpace -= 70
-                                rowCount = 0
-                                rowSpace = 495
     pygame.display.update()
     clock.tick(60)

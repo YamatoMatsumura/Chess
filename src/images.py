@@ -83,3 +83,55 @@ def promotion_menu(screen, piece, color, xIndex, promotionMenuClicked, colorClic
         elif bishopPromote.clicked:
             returnVar = 'bishop'
         return returnVar
+
+
+def blit_board_white(screen, board, boardRect, boardState):
+    rowSpace = 4
+    colSpace = 8
+    rowCount = 0
+    screen.blit(board, boardRect)
+    for col in boardState:
+        for row in col:
+            try:
+                screen.blit(row['check'], (rowSpace-3.01, colSpace-8))
+            except KeyError:
+                pass
+            # blit pieces on board
+            screen.blit(row["image"], (rowSpace, colSpace))
+            try:
+                # blit green/red circle on board
+                screen.blit(row["moves"], (rowSpace+20, colSpace+16))
+            except KeyError:
+                pass
+            rowSpace += 70
+            rowCount += 1
+            if rowCount == 8:
+                colSpace += 70
+                rowCount = 0
+                rowSpace = 4
+
+
+def blit_board_black(screen, board, boardRect, boardState):
+    rowSpace = 495
+    colSpace = 500
+    rowCount = 0
+    screen.blit(board, boardRect)
+    for col in boardState:
+        for row in col:
+            try:
+                screen.blit(row['check'], (rowSpace-3.01, colSpace-8))
+            except KeyError:
+                pass
+            # blit pieces on board
+            screen.blit(row["image"], (rowSpace, colSpace))
+            try:
+                # blit green/red circle on board
+                screen.blit(row["moves"], (rowSpace+20, colSpace+16))
+            except KeyError:
+                pass
+            rowSpace -= 70
+            rowCount += 1
+            if rowCount == 8:
+                colSpace -= 70
+                rowCount = 0
+                rowSpace = 495
