@@ -48,7 +48,6 @@ boardBackground = pygame.transform.scale(boardBackground, (560, 560))
 boardRect = board.get_rect()
 screen = pygame.display.set_mode((boardRect.width, boardRect.height))
 
-boardHistory = []
 boardState = [
     [{'piece': "br", 'image': br}, {'piece': "bn", 'image': bn},
      {'piece': "bb", 'image': bb}, {'piece': "bq", 'image': bq},
@@ -90,7 +89,8 @@ boardState = [
      {'piece': "wk", 'image': wk}, {'piece': "wb", 'image': wb},
      {'piece': "wn", 'image': wn}, {'piece': "wr", 'image': wr}],
 ]
-
+temp = check.deep_copy_structure(boardState)
+boardHistory = [temp]
 
 # make tile for each square to see mouse collision
 tile = []
@@ -123,9 +123,9 @@ for x in range(8):
         tileCount += 1
 
 # initialize variables
-click1Piece, click2Piece, click1Pos, click2Pos, mapture, gameOver, pawnPos, originalBoardState, promotionPiece, keyPressed = (None,) * 10
-inCheck, started, onePlayerMode, twoPlayerMode, enPessantInfo, promotionMenu, bool, colorClicked, engineTurn, engineSkip = (False, ) * 10
-clickCount, loopCount = (0, ) * 2
+click1Piece, click2Piece, click1Pos, click2Pos, mapture, gameOver, pawnPos, originalBoardState, promotionPiece = (None,) * 9
+inCheck, started, onePlayerMode, twoPlayerMode, enPessantInfo, promotionMenu, bool, colorClicked, engineTurn, engineSkip, checkingBoardHistory = (False, ) * 11
+clickCount, loopCount, historyIndex = (0, ) * 3
 firstTimeColorClicked = True
 
 # initialize menu image objects & images
@@ -249,15 +249,9 @@ while True:
                     boardState = check.is_check_after_move(clickedPiece['name'][index], pawnPos, boardState)[1]
                 if check.checkmate(boardState, s):
                     gameOver = True
-
             pygame.display.update()
             clock.tick(60)
             continue
-        if keyPressed is not None:
-            currentIndex = len(boardState)
-            if keyPressed == 'r':
-                pass
-
         if twoPlayerMode:
             # main two player game event loop
             for event in pygame.event.get():
@@ -267,9 +261,19 @@ while True:
                     exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RIGHT:
-                        keyPressed = 'r'
+                        historyIndex -= 1
+                        checkingBoardHistory = True
                     if event.key == pygame.K_LEFT:
-                        keyPressed = 'w'
+                        historyIndex += 1
+                        checkingBoardHistory = True
+                    # check if back to current boardState
+                    if historyIndex < 1:
+                        historyIndex = 0
+                        checkingBoardHistory = False
+                        continue
+                    # check if at starting boardState
+                    if historyIndex > len(boardHistory) - 1:
+                        historyIndex -= 1
                 # event.button == 1 is a left click
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     # get info about click pos
@@ -329,7 +333,9 @@ while True:
                             boardState = update.update_move(mapture, boardState, click1Pos, click2Pos, s)
                             # update turn count
                             turnCount = validate.turn_counter(click1Piece, click2Piece, turnCount, mapture)[1]
-                            boardHistory.append(boardState)
+                            # keep track of boardStates, make copy of it first b/c list mutable
+                            temp = check.deep_copy_structure(boardState)
+                            boardHistory = [temp] + boardHistory
 
                             # see if move put king in check
                             if isinstance(check.is_check_after_move(click1Piece, click2Pos, boardState), tuple):
@@ -345,6 +351,14 @@ while True:
                             click1Pos, click2Pos = None, None
                     if check.checkmate(boardState, s):
                         gameOver = True
+            # if currently moving through boardHistory
+            if checkingBoardHistory:
+                images.blit_board_white(screen, board, boardRect, boardHistory[historyIndex])
+                # update display and continue so current board doesn't get blitted over
+                pygame.display.update()
+                clock.tick(60)
+                continue
+
             # blit board
             images.blit_board_white(screen, board, boardRect, boardState)
 
@@ -389,6 +403,23 @@ while True:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        historyIndex -= 1
+                        checkingBoardHistory = True
+                    if event.key == pygame.K_LEFT:
+                        historyIndex += 1
+                        checkingBoardHistory = True
+                    # check if back to current boardState
+                    if historyIndex < 1:
+                        historyIndex = 0
+                        checkingBoardHistory = False
+                        continue
+                    # check if at starting boardState
+                    if historyIndex > len(boardHistory) - 1:
+                        historyIndex -= 1
+
                 # event.button == 1 is a left click
                 # also make sure not firstTimeColorClicked so clicking icon doesn't count as click1
                 if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not firstTimeColorClicked) or engineSkip:
@@ -448,6 +479,9 @@ while True:
                             boardState = update.update_move(mapture, boardState, click1Pos, click2Pos, s)
                             # update turn count, 0=white's turn, 1=black's turn
                             turnCount = validate.turn_counter(click1Piece, click2Piece, turnCount, mapture)[1]
+                            # keep track of boardStates, make a copy b/c boardState(list) immutable
+                            temp = check.deep_copy_structure(boardState)
+                            boardHistory = [temp] + boardHistory
 
                             # manually handle promotions if engine promotes
                             if promotionPiece is not None:
@@ -478,6 +512,18 @@ while True:
                             click1Pos, click2Pos = None, None
                     if check.checkmate(boardState, s):
                         gameOver = True
+
+            if checkingBoardHistory:
+                if colorClicked is not False:
+                    if colorClicked[1] == 'w':
+                        images.blit_board_white(screen, board, boardRect, boardHistory[historyIndex])
+                    elif colorClicked[1] == 'b':
+                        images.blit_board_black(screen, board, boardRect, boardHistory[historyIndex])
+                # update display and continue so current board doesn't get blitted over
+                pygame.display.update()
+                clock.tick(60)
+                continue
+
             # blit board depending on what color was clicked
             if colorClicked is not False:
                 if colorClicked[1] == 'w':
