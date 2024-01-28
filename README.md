@@ -1,7 +1,7 @@
 # Chess
 
 ## Description
-This project is essentially a re-creation of the popular board game, chess, from scratch other than the single player engine. It first started as a final project for a coding class, but new features were constantly added and grew entirely past thee scope of the project. I had a lot of fun making this to please feel free to check it out!
+This project is essentially a re-creation of the popular board game, chess, from scratch other than the single player engine. It first started as a final project for a coding class, but new features were constantly added and grew entirely past the scope of the project. I had a lot of fun making this to please feel free to check it out!
 
 ## Usage
 Download all neccesary files (pip install requirements.txt) and run the main.py file contained in src.
